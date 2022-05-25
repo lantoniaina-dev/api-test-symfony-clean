@@ -10,7 +10,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\CalculeService;
-use App\Data\TestData;
 
 
 class TestController extends AbstractController
