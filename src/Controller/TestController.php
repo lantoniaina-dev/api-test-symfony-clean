@@ -6,13 +6,14 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\CalculeService;
+use App\Data\TestData;
 
 
-class TestController 
+class TestController extends AbstractController
 {
     private $client;
     private $logger;
@@ -25,33 +26,39 @@ class TestController
 
     
     /**
+     *  Page de test
+     * 
      * @Route("/test", name="blog_list")
      */
-    public function list(Request $request , CalculeService $calcule):Response
+    public function list(Request $request , TestData $datajson):Response
     {
-        $response = $this->client->request(
+        // // $datareq = $data->getData();
+        $data = $this->client->request(
             'GET',
-            'https://api.github.com/repos/symfony/symfony-docs'
+            'https://api.github.com/repos/symfony/symfony-docs',
         );
 
-        $statusCode = $response->getStatusCode();
-        // $statusCode = 200
-        $contentType = $response->getHeaders()['content-type'][0];
-        // $contentType = 'application/json'
-        $content = $response->getContent();
-        // $content = '{"id":521583, "name":"symfony-docs", ...}'
-        $content = $response->toArray();
-        $tab = json_encode($content);
+        $array = array(
+            "id" => "1",
+            "title" => "mon title",
+        );
+        // $json = $serializer -> serialize($array , 'json' );
+        // $statusCode = $data->getStatusCode();
+        // $contentType = $data->getHeaders()['content-type'][0];
+        // $content = $data->toArray();
+        // dd($content);
+        // $tab = json_encode($content);
         
-        $this->logger->error("TEST TEST TEST TEST TEST ");
-        $prix = $calcule->taxe(100,20);
-        //  dd($tab, $statusCode , $contentType , $response);
-        //  return new Response( 
-        //      '<html><body>Lucky number: '.$content.'</body></html>'
-        //  );
-        // return new Response(
-        //     "$tab"
-        // );
+        //  dd($response);
+        // $response = $this -> json($data , 200);
+        // return $respose ;
        
+
+        //  return new JsonResponse($content , 200 , [] );
+        // 
+        phpInfo();
+        die;
+        
+         
     }
 }
