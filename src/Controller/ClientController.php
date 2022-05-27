@@ -19,7 +19,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
-class PostController extends AbstractController
+class ClientController extends AbstractController
 {
     /**
      * @Route("/client/get", name="get_client" ,methods = {"GET"})

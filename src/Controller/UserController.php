@@ -14,48 +14,58 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Users;
+use App\Entity\User;
 use App\Repository\UsersRepository;
 
-class UsersController extends AbstractController
+class UserController extends AbstractController
 {
 
     /**
-     * @Route("/users/get", name="get_users" ,methods = {"GET"})
+     * @Route("/user/get", name="get_user" ,methods = {"GET"})
      */
     public function getAll(
-        UsersRepository $usersRepository ,
+        UsersRepository $userRepository ,
         ManagerRegistry $doctrine 
         ): JsonResponse
     {
         $entityManager = $doctrine->getManager();
-        $client = $usersRepository -> findAll();
+        $client = $userRepository -> findAll();
         $response = $this->json($client , 200, [] );
         return $response;
     }
     /**
-     * @Route("/users/add", name="add_users" , methods = {"POST"})
+     * @Route("/user/add", name="add_user" , methods = {"POST"})
      */
     public function add(
         Request $request ,
         ManagerRegistry $doctrine , 
         SerializerInterface $serializer , 
         EntityManagerInterface $em,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        UserPasswordEncoderInterface $encoder
         ): JsonResponse
     {
         $data = $request->getContent();
         try{
-            $post = $serializer->deserialize($data, Users::class, 'json');
-            $error = $validator->validate($post);
+
+            $user = $serializer->deserialize($data, User::class, 'json');
+            $error = $validator->validate($user);
             if(count($error)>0) {
                return $this->json($error , 400 );
             }
-            $em->persist($post);
+
+            $encoded = $encoder->encodePassword($user, $user->getPassword());
+            $user->setPassword($encoded);
+            // dd($user);
+
+            $em->persist($user);
             $em->flush();
-            return $this->json($post , 201 , []);
+            return $this->json($user , 201 , []);
+
         }
         catch(NotEncodableValueException $e){
             return  $this->json([
