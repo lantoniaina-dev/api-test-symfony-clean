@@ -24,16 +24,29 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class AuthController extends AbstractController
 {
+
+    private $serializer;
+    private $em;
+    private $usersRepository;
+    private $encoder;
+
+    public function __construct(
+        SerializerInterface $serializer,
+        EntityManagerInterface $em,
+        UsersRepository $usersRepository,
+        UserPasswordEncoderInterface $encoder
+    ) {
+        $this->serializer = $serializer;
+        $this->em = $em;
+        $this->usersRepository = $usersRepository;
+        $this->encoder = $encoder;
+    }
+
     /**
      * @Route("/auth/login", name="login" , methods = {"POST"} )
      */
-    public function login(
-        Request $request,
-        UsersRepository $usersRepository,
-        ManagerRegistry $doctrine,
-        SerializerInterface $serializer,
-        UserPasswordEncoderInterface $encoder
-    ): JsonResponse {
+    public function login(Request $request): JsonResponse
+    {
         $reponseSucces =  [
             'status' => 200,
             'authentification' => true,
@@ -53,18 +66,17 @@ class AuthController extends AbstractController
             'class' => "alert alert-danger"
         ];
 
-        $entityManager = $doctrine->getManager();
 
         $datareq = $request->getContent();
-        $user = $serializer->deserialize($datareq, Users::class, 'json');
+        $user = $this->serializer->deserialize($datareq, Users::class, 'json');
         // $encoder = $this->container->get('security.password_encoder');
-        $encoded = $encoder->encodePassword($user, $user->getPassword());
+        $encoded = $this->encoder->encodePassword($user, $user->getPassword());
 
         $data = json_decode($request->getContent(), true);
         $name = $data['name'];
         $pass = $data['password'];
 
-        $user = $usersRepository->findby(['name' => $name]);
+        $user = $this->usersRepository->findby(['name' => $name]);
         if (!$user) {
             return $this->json($reponseFailUser, 400, []);
         }
@@ -113,10 +125,11 @@ class AuthController extends AbstractController
 
         return $response;
     }
+
     /**
      * @Route("/api/verify-token", name="verify_token" , methods = {"POST"} , schemes = {"http", "https"})
      */
-    public function verifyToken(Request $request, SerializerInterface $serializer, UsersRepository $usersRepository): JsonResponse
+    public function verifyToken(Request $request): JsonResponse
     {
         $reponseFail =  ['status' => 400, 'token_verify' => false,];
         $reponseSucces =  ['status' => 200, 'token_verify' => true,];
@@ -131,7 +144,7 @@ class AuthController extends AbstractController
             return $this->json($reponseFail, 400, []);
         }
 
-        $user = $usersRepository->findby(['username' => $decoded->username]);
+        $user = $this->usersRepository->findby(['username' => $decoded->username]);
         if (!$user) {
             return $this->json($reponseFail, 400, []);
         }

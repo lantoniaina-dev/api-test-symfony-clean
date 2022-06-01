@@ -21,15 +21,33 @@ use Psr\Log\LoggerInterface;
 
 class ClientController extends AbstractController
 {
+
+    private $serializer;
+    private $em;
+    private $validator;
+    private $clientRepository;
+    private $doctrine;
+
+    public function __construct(
+        SerializerInterface $serializer,
+        EntityManagerInterface $em,
+        ValidatorInterface $validator,
+        ClientRepository $clientRepository,
+        ManagerRegistry $doctrine
+    ) {
+        $this->serializer = $serializer;
+        $this->em = $em;
+        $this->validator = $validator;
+        $this->clientRepository = $clientRepository;
+        $this->doctrine = $doctrine;
+    }
+
     /**
      * @Route("/api/client/get", name="get_client" ,methods = {"GET"})
      */
-    public function getAll(
-        ClientRepository $clientRepository,
-        ManagerRegistry $doctrine
-    ): JsonResponse {
-        $entityManager = $doctrine->getManager();
-        $client = $clientRepository->findAll();
+    public function getAll(): JsonResponse
+    {
+        $client = $this->clientRepository->findAll();
         $response = $this->json($client, 200, []);
         return $response;
     }
@@ -37,22 +55,17 @@ class ClientController extends AbstractController
     /**
      * @Route("/api/client/add", name="add_client", methods = {"POST"} )
      */
-    public function add(
-        Request $request,
-        ManagerRegistry $doctrine,
-        SerializerInterface $serializer,
-        EntityManagerInterface $em,
-        ValidatorInterface $validator
-    ): JsonResponse {
+    public function add(Request $request): JsonResponse
+    {
         $data = $request->getContent();
         try {
-            $post = $serializer->deserialize($data, Client::class, 'json');
-            $error = $validator->validate($post);
+            $post = $this->serializer->deserialize($data, Client::class, 'json');
+            $error = $this->validator->validate($post);
             if (count($error) > 0) {
                 return $this->json($error, 400);
             }
-            $em->persist($post);
-            $em->flush();
+            $this->em->persist($post);
+            $this->em->flush();
             return $this->json($post, 201, []);
         } catch (NotEncodableValueException $e) {
             return  $this->json([
@@ -65,10 +78,9 @@ class ClientController extends AbstractController
     /**
      * @Route("/api/client/view/{id}", name="view_client" ,methods = {"GET"})
      */
-    public function view(int $id, ClientRepository $clientRepository,  ManagerRegistry $doctrine): JsonResponse
+    public function view(int $id): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $client = $clientRepository->find($id);
+        $client = $this->clientRepository->find($id);
         if (!$client) {
             return $this->json("Aucun client for ID :$id", 404);
         }
@@ -79,10 +91,9 @@ class ClientController extends AbstractController
     /**
      * @Route("/api/client/update/{id}", name="update_client" ,methods = {"POST"})
      */
-    public function update(int $id, Request $request, ClientRepository $clientRepository,  ManagerRegistry $doctrine): JsonResponse
+    public function update(int $id, Request $request): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $client = $clientRepository->find($id);
+        $client = $this->clientRepository->find($id);
         if (!$client) {
             return $this->json("Aucun client for ID :$id", 404);
         }
@@ -92,7 +103,7 @@ class ClientController extends AbstractController
 
         $client->setName($name);
         $client->setAge($age);
-        $entityManager->flush();
+        $this->em->flush();
 
         $dataclient =  [
             'id' => $client->getId(),
@@ -106,15 +117,15 @@ class ClientController extends AbstractController
     /**
      * @Route("/api/client/delete/{id}", name="delete_client" ,methods = {"GET"})
      */
-    public function delete(int $id, ClientRepository $clientRepository,  ManagerRegistry $doctrine): JsonResponse
+    public function delete(int $id,  ManagerRegistry $doctrine): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $client = $clientRepository->find($id);
+        // $entityManager = $doctrine->getManager();
+        $client = $this->clientRepository->find($id);
         if (!$client) {
             return $this->json("Aucun client for ID :$id", 404);
         }
-        $entityManager->remove($client);
-        $entityManager->flush();
+        $this->em->remove($client);
+        $this->em->flush();
 
         $response = $this->json([
             'delete ID ' => $id,
@@ -127,18 +138,13 @@ class ClientController extends AbstractController
     /**
      * @Route("/api/client/search/{search}", name="search_client" ,methods = {"GET"})
      */
-    public function search(
-        EntityManagerInterface $em,
-        ManagerRegistry $doctrine,
-        ClientRepository $clientRepository,
-        string $search = ""
-    ): JsonResponse {
-        $entityManager = $doctrine->getManager();
+    public function search(string $search = ""): JsonResponse
+    {
         if ($search == "") {
-            $client = $clientRepository->findAll();
+            $client = $this->clientRepository->findAll();
             return $this->json($client, 200, []);
         }
-        $client = $clientRepository->findby(
+        $client = $this->clientRepository->findby(
             ['name' => $search],
             ['age' => 'ASC']
         );
