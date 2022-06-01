@@ -2,20 +2,19 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\UsersRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @ORM\Entity(repositoryClass=UserRepository::class)
- * @ORM\Table(name="`user`")
+ * @ORM\Entity(repositoryClass=UsersRepository::class)
+ * @ORM\Table(name="`users`")
  * @UniqueEntity(fields = {"email"} , message = "Email deja utilisé !")
  */
-class User implements UserInterface
+class Users implements UserInterface
 {
     /**
      * @ORM\Id
@@ -42,6 +41,7 @@ class User implements UserInterface
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message = "Password est obligatoire")
      * @Assert\Length(min=2)
+     * 
      */
     private $password;
 
@@ -86,12 +86,28 @@ class User implements UserInterface
         return $this;
     }
 
-    
-    public function eraseCredentials(){}
 
-    public function getSalt(){}
+    public function eraseCredentials()
+    {
+        $user_data =  [
+            'id' => $this->id,
+            'username' => $this->username,
+            'email' => $this->email,
+            'role' => $this->getRoles(),
+        ];
+        return $user_data;
+    }
 
-    public function getRoles(){
+    public function getSalt()
+    {
+    }
+
+    public function getRoles()
+    {
         return ['ROLE_USER'];
+    }
+    public function getUserIdentifier()
+    {
+        return  $this->username;
     }
 }

@@ -22,73 +22,69 @@ use Psr\Log\LoggerInterface;
 class ClientController extends AbstractController
 {
     /**
-     * @Route("/client/get", name="get_client" ,methods = {"GET"})
+     * @Route("/api/client/get", name="get_client" ,methods = {"GET"})
      */
     public function getAll(
-        ClientRepository $clientRepository ,
-        ManagerRegistry $doctrine 
-        ): JsonResponse
-    {
+        ClientRepository $clientRepository,
+        ManagerRegistry $doctrine
+    ): JsonResponse {
         $entityManager = $doctrine->getManager();
-        $client = $clientRepository -> findAll();
-        $response = $this->json($client , 200, [] );
+        $client = $clientRepository->findAll();
+        $response = $this->json($client, 200, []);
         return $response;
     }
 
     /**
-     * @Route("/client/add", name="add_client", methods = {"POST"} )
+     * @Route("/api/client/add", name="add_client", methods = {"POST"} )
      */
     public function add(
-        Request $request ,
-        ManagerRegistry $doctrine , 
-        SerializerInterface $serializer , 
+        Request $request,
+        ManagerRegistry $doctrine,
+        SerializerInterface $serializer,
         EntityManagerInterface $em,
         ValidatorInterface $validator
-        ): JsonResponse
-    {
+    ): JsonResponse {
         $data = $request->getContent();
-        try{
+        try {
             $post = $serializer->deserialize($data, Client::class, 'json');
             $error = $validator->validate($post);
-            if(count($error)>0) {
-               return $this->json($error , 400 );
+            if (count($error) > 0) {
+                return $this->json($error, 400);
             }
             $em->persist($post);
             $em->flush();
-            return $this->json($post , 201 , []);
-        }
-        catch(NotEncodableValueException $e){
+            return $this->json($post, 201, []);
+        } catch (NotEncodableValueException $e) {
             return  $this->json([
-                'status'=> 400,
-                'message'=> $e->getMessage()
-            ],400);
+                'status' => 400,
+                'message' => $e->getMessage()
+            ], 400);
         }
-    }
-    
-    /**
-     * @Route("/client/view/{id}", name="view_client" ,methods = {"GET"})
-     */
-    public function view(int $id , ClientRepository $clientRepository ,  ManagerRegistry $doctrine ): JsonResponse
-    {
-        $entityManager = $doctrine->getManager();
-        $client = $clientRepository -> find($id);
-        if (!$client) {
-            return $this->json("Aucun client for ID :$id"  , 404);
-        }
-        $response = $this->json($client , 200, [] );
-        return $response;
-        
     }
 
     /**
-     * @Route("/client/update/{id}", name="update_client" ,methods = {"POST"})
+     * @Route("/api/client/view/{id}", name="view_client" ,methods = {"GET"})
      */
-    public function update(int $id ,Request $request , ClientRepository $clientRepository ,  ManagerRegistry $doctrine ): JsonResponse
+    public function view(int $id, ClientRepository $clientRepository,  ManagerRegistry $doctrine): JsonResponse
     {
         $entityManager = $doctrine->getManager();
-        $client = $clientRepository -> find($id);
+        $client = $clientRepository->find($id);
         if (!$client) {
-            return $this->json("Aucun client for ID :$id"  , 404);
+            return $this->json("Aucun client for ID :$id", 404);
+        }
+        $response = $this->json($client, 200, []);
+        return $response;
+    }
+
+    /**
+     * @Route("/api/client/update/{id}", name="update_client" ,methods = {"POST"})
+     */
+    public function update(int $id, Request $request, ClientRepository $clientRepository,  ManagerRegistry $doctrine): JsonResponse
+    {
+        $entityManager = $doctrine->getManager();
+        $client = $clientRepository->find($id);
+        if (!$client) {
+            return $this->json("Aucun client for ID :$id", 404);
         }
         $data = json_decode($request->getContent(), true);
         $name = $data['name'];
@@ -103,20 +99,19 @@ class ClientController extends AbstractController
             'name' => $client->getName(),
             'age' => $client->getAge(),
         ];
-        $response = $this->json($dataclient , 201, [] );
+        $response = $this->json($dataclient, 201, []);
         return $response;
-        
     }
 
     /**
-     * @Route("/client/delete/{id}", name="delete_client" ,methods = {"GET"})
+     * @Route("/api/client/delete/{id}", name="delete_client" ,methods = {"GET"})
      */
-    public function delete(int $id , ClientRepository $clientRepository ,  ManagerRegistry $doctrine ): JsonResponse
+    public function delete(int $id, ClientRepository $clientRepository,  ManagerRegistry $doctrine): JsonResponse
     {
         $entityManager = $doctrine->getManager();
-        $client = $clientRepository -> find($id);
+        $client = $clientRepository->find($id);
         if (!$client) {
-            return $this->json("Aucun client for ID :$id"  , 404);
+            return $this->json("Aucun client for ID :$id", 404);
         }
         $entityManager->remove($client);
         $entityManager->flush();
@@ -125,48 +120,48 @@ class ClientController extends AbstractController
             'delete ID ' => $id,
             'status' => 200,
             'message' => "Client delete  ID : $id",
-        ],200 );
+        ], 200);
         return $response;
     }
 
     /**
-     * @Route("/client/search/{search}", name="search_client" ,methods = {"GET"})
+     * @Route("/api/client/search/{search}", name="search_client" ,methods = {"GET"})
      */
-    public function search( 
-        EntityManagerInterface $em ,
-        ManagerRegistry $doctrine ,
-        ClientRepository $clientRepository ,
-        string $search = "" 
-        ): JsonResponse
-    {
+    public function search(
+        EntityManagerInterface $em,
+        ManagerRegistry $doctrine,
+        ClientRepository $clientRepository,
+        string $search = ""
+    ): JsonResponse {
         $entityManager = $doctrine->getManager();
-        if($search==""){
-           $client = $clientRepository -> findAll();
-           return $this->json($client , 200, [] );
+        if ($search == "") {
+            $client = $clientRepository->findAll();
+            return $this->json($client, 200, []);
         }
-        $client = $clientRepository -> findby(['name' => $search],
-        ['age' => 'ASC']);
+        $client = $clientRepository->findby(
+            ['name' => $search],
+            ['age' => 'ASC']
+        );
         if (!$client) {
-            return $this->json("Aucun client "  , 404);
+            return $this->json("Aucun client ", 404);
         }
-        
-        $response = $this->json($client , 200, [] );
+
+        $response = $this->json($client, 200, []);
         return $response;
-       
     }
-        
+
 
     /**
-     * @Route("/client/test", name="client" )
+     * @Route("/api/client/test", name="client" )
      */
-    public function index(ManagerRegistry $doctrine ): Response
+    public function index(ManagerRegistry $doctrine): Response
     {
         $entityManager = $doctrine->getManager();
         $client = new Client();
         $client->setName('Fanantenana');
-        $client ->setAge(56);
+        $client->setAge(56);
         $entityManager->persist($client);
         $entityManager->flush();
-        return new Response('Saved new product with id '.$client->getId());
+        return new Response('Saved new product with id ' . $client->getId());
     }
 }

@@ -17,19 +17,19 @@ class TestController extends AbstractController
     private $client;
     private $logger;
 
-    public function __construct(HttpClientInterface $client , LoggerInterface $logger)
+    public function __construct(HttpClientInterface $client, LoggerInterface $logger)
     {
         $this->client = $client;
         $this->logger = $logger;
     }
 
-    
+
     /**
      *  Page de test
      * 
      * @Route("/test", name="blog_list")
      */
-    public function list(Request $request , TestData $datajson):Response
+    public function list(Request $request): Response
     {
         // // $datareq = $data->getData();
         $data = $this->client->request(
@@ -47,17 +47,15 @@ class TestController extends AbstractController
         // $content = $data->toArray();
         // dd($content);
         // $tab = json_encode($content);
-        
+
         //  dd($response);
         // $response = $this -> json($data , 200);
         // return $respose ;
-       
+
 
         //  return new JsonResponse($content , 200 , [] );
         // 
         phpInfo();
         die;
-        
-         
     }
 }
