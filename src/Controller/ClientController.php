@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
 use App\Entity\Client;
 use App\Repository\ClientRepository;
+use App\Service\SendMailService;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -55,7 +56,7 @@ class ClientController extends AbstractController
     /**
      * @Route("/api/client/add", name="add_client", methods = {"POST"} )
      */
-    public function add(Request $request): JsonResponse
+    public function add(Request $request, SendMailService $sendemail): JsonResponse
     {
         $data = $request->getContent();
         try {
@@ -64,6 +65,8 @@ class ClientController extends AbstractController
             if (count($error) > 0) {
                 return $this->json($error, 400);
             }
+            $sendemail->send();
+
             $this->em->persist($post);
             $this->em->flush();
             return $this->json($post, 201, []);
