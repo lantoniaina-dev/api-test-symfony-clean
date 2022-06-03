@@ -42,55 +42,6 @@ class AuthController extends AbstractController
         $this->encoder = $encoder;
     }
 
-    /**
-     * @Route("/auth/login", name="login" , methods = {"POST"} )
-     */
-    public function login(Request $request): JsonResponse
-    {
-        $reponseSucces =  [
-            'status' => 200,
-            'authentification' => true,
-            'message' => "User authentifié",
-            'class' => "alert alert-primary"
-        ];
-        $reponseFailUser =  [
-            'status' => 400,
-            'authentification' => false,
-            'message' => "No user with name",
-            'class' => "alert alert-danger"
-        ];
-        $reponsePassword =  [
-            'status' => 400,
-            'authentification' => false,
-            'message' => "Password incorrect",
-            'class' => "alert alert-danger"
-        ];
-
-
-        $datareq = $request->getContent();
-        $user = $this->serializer->deserialize($datareq, Users::class, 'json');
-        // $encoder = $this->container->get('security.password_encoder');
-        $encoded = $this->encoder->encodePassword($user, $user->getPassword());
-
-        $data = json_decode($request->getContent(), true);
-        $name = $data['name'];
-        $pass = $data['password'];
-
-        $user = $this->usersRepository->findby(['name' => $name]);
-        if (!$user) {
-            return $this->json($reponseFailUser, 400, []);
-        }
-
-        foreach ($user as $u) {
-            $userpass = $u->getPassword();
-            // dd($userpass , $encoded);
-            if ($encoded == $userpass) {
-                return $this->json($reponseSucces, 200, []);
-            } else {
-                return $this->json($reponsePassword, 400, []);
-            }
-        }
-    }
 
     /**
      * @Route("/api/login", name="login" , methods = {"POST"} , schemes = {"http", "https"})
@@ -156,6 +107,57 @@ class AuthController extends AbstractController
                 return $this->json($reponseSucces, 200, []);
             } else {
                 return $this->json($reponseFail, 400, []);
+            }
+        }
+    }
+
+
+    /**
+     * @Route("/auth/login", name="test_login" , methods = {"POST"} )
+     */
+    public function login(Request $request): JsonResponse
+    {
+        $reponseSucces =  [
+            'status' => 200,
+            'authentification' => true,
+            'message' => "User authentifié",
+            'class' => "alert alert-primary"
+        ];
+        $reponseFailUser =  [
+            'status' => 400,
+            'authentification' => false,
+            'message' => "No user with name",
+            'class' => "alert alert-danger"
+        ];
+        $reponsePassword =  [
+            'status' => 400,
+            'authentification' => false,
+            'message' => "Password incorrect",
+            'class' => "alert alert-danger"
+        ];
+
+
+        $datareq = $request->getContent();
+        $user = $this->serializer->deserialize($datareq, Users::class, 'json');
+        // $encoder = $this->container->get('security.password_encoder');
+        $encoded = $this->encoder->encodePassword($user, $user->getPassword());
+
+        $data = json_decode($request->getContent(), true);
+        $name = $data['name'];
+        $pass = $data['password'];
+
+        $user = $this->usersRepository->findby(['name' => $name]);
+        if (!$user) {
+            return $this->json($reponseFailUser, 400, []);
+        }
+
+        foreach ($user as $u) {
+            $userpass = $u->getPassword();
+            // dd($userpass , $encoded);
+            if ($encoded == $userpass) {
+                return $this->json($reponseSucces, 200, []);
+            } else {
+                return $this->json($reponsePassword, 400, []);
             }
         }
     }
