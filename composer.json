@@ -11,8 +11,6 @@
         "doctrine/annotations": "^1.0",
         "doctrine/doctrine-bundle": "^2.6",
         "doctrine/doctrine-migrations-bundle": "^3.2",
-        "doctrine/mongodb-odm": "2.3.x-dev",
-        "doctrine/mongodb-odm-bundle": "4.4",
         "doctrine/orm": "^2.12",
         "firebase/php-jwt": "^6.2",
         "fzaninotto/faker": "^1.9",
@@ -39,6 +37,7 @@
         "symfony/runtime": "5.4.*",
         "symfony/security-bundle": "5.4.*",
         "symfony/serializer": "5.4.*",
+        "symfony/swiftmailer-bundle": "^3.5",
         "symfony/twig-bundle": "5.4.*",
         "symfony/validator": "5.4.*",
         "symfony/yaml": "5.4.*"

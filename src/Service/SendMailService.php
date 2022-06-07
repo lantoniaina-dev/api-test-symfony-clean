@@ -20,7 +20,7 @@ class SendMailService
         $mail->SMTPDebug  = 1;
         $mail->SMTPAuth   = TRUE;
         $mail->SMTPSecure = "tls";
-        $mail->Port       = 587;
+        $mail->Port       = 465;
         $mail->Host       = "smtp.gmail.com";
         $mail->Username   = "randriamampionona9@gmail.com";
         $mail->Password   = "#Lantoniaina9";

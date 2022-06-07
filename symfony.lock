@@ -97,22 +97,6 @@
     "doctrine/migrations": {
         "version": "3.5.1"
     },
-    "doctrine/mongodb-odm": {
-        "version": "2.3.x-dev"
-    },
-    "doctrine/mongodb-odm-bundle": {
-        "version": "4.4",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "main",
-            "version": "4.1",
-            "ref": "68562ca89de9f97a952535cd3eee49f5541b76a7"
-        },
-        "files": [
-            "./config/packages/doctrine_mongodb.yaml",
-            "./src/Document/.gitignore"
-        ]
-    },
     "doctrine/orm": {
         "version": "2.12.2"
     },
@@ -137,14 +121,8 @@
     "fzaninotto/faker": {
         "version": "v1.9.2"
     },
-    "jean85/pretty-package-versions": {
-        "version": "2.0.5"
-    },
     "laminas/laminas-code": {
         "version": "4.5.1"
-    },
-    "mongodb/mongodb": {
-        "version": "1.12.0"
     },
     "monolog/monolog": {
         "version": "2.6.0"
@@ -205,6 +183,9 @@
         "files": [
             "./config/packages/sensio_framework_extra.yaml"
         ]
+    },
+    "swiftmailer/swiftmailer": {
+        "version": "v6.3.0"
     },
     "symfony/asset": {
         "version": "v5.4.7"
@@ -441,6 +422,20 @@
     },
     "symfony/string": {
         "version": "v5.4.8"
+    },
+    "symfony/swiftmailer-bundle": {
+        "version": "3.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.5",
+            "ref": "f0b2fccdca2dfd97dc2fd5ad216d5e27c4f895ac"
+        },
+        "files": [
+            "./config/packages/dev/swiftmailer.yaml",
+            "./config/packages/swiftmailer.yaml",
+            "./config/packages/test/swiftmailer.yaml"
+        ]
     },
     "symfony/translation-contracts": {
         "version": "v2.5.1"
