@@ -81,17 +81,17 @@ class UsersController extends AbstractController
             $this->em->persist($user);
             $this->em->flush();
 
-            $this->mailerService->send(
-                "New Email",
-                "randriamampionona9@gmail.com",
-                "randriamampiononaandritoky@gmail.com",
-                "email/contact.html.twig",
-                [
-                    "name" => "toky",
-                    "description" => "email message",
-                    "email" => "mon email"
-                ]
-            );
+            // $this->mailerService->send(
+            //     "New Email",
+            //     "randriamampionona9@gmail.com",
+            //     "randriamampiononaandritoky@gmail.com",
+            //     "email/contact.html.twig",
+            //     [
+            //         "name" => "toky",
+            //         "description" => "email message",
+            //         "email" => "mon email"
+            //     ]
+            // );
 
             return $this->json($user, 201, []);
         } catch (NotEncodableValueException $e) {

@@ -111,7 +111,6 @@ class AuthController extends AbstractController
         }
     }
 
-
     /**
      * @Route("/auth/login", name="test_login" , methods = {"POST"} )
      */

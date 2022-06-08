@@ -5,6 +5,7 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     uploads_directory: '%kernel.project_dir%/public/uploads/images'
+    apikey : 'abcde'
 
 services:
     # default configuration for services in *this* file
@@ -32,5 +33,10 @@ services:
     #  App\EventListener\BarListener:
     #     tags:
     #         - { name: kernel.event_listener, event: foo, method: doSomething }
-        
+
+    App\EventListener\ExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception } 
+
+  
           
