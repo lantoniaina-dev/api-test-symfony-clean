@@ -12,7 +12,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
-
 use App\Entity\Client;
 use App\Repository\ClientRepository;
 use App\Service\SendMailService;
@@ -62,13 +61,15 @@ class ClientController extends AbstractController
         try {
             $post = $this->serializer->deserialize($data, Client::class, 'json');
             $error = $this->validator->validate($post);
+
             if (count($error) > 0) {
                 return $this->json($error, 400);
             }
-            $sendemail->send();
 
+            $sendemail->send();
             $this->em->persist($post);
             $this->em->flush();
+
             return $this->json($post, 201, []);
         } catch (NotEncodableValueException $e) {
             return  $this->json([
@@ -84,9 +85,11 @@ class ClientController extends AbstractController
     public function view(int $id): JsonResponse
     {
         $client = $this->clientRepository->find($id);
+
         if (!$client) {
             return $this->json("Aucun client for ID :$id", 404);
         }
+
         $response = $this->json($client, 200, []);
         return $response;
     }
@@ -97,9 +100,11 @@ class ClientController extends AbstractController
     public function update(int $id, Request $request): JsonResponse
     {
         $client = $this->clientRepository->find($id);
+
         if (!$client) {
             return $this->json("Aucun client for ID :$id", 404);
         }
+
         $data = json_decode($request->getContent(), true);
         $name = $data['name'];
         $age = $data['age'];
@@ -114,6 +119,7 @@ class ClientController extends AbstractController
             'age' => $client->getAge(),
         ];
         $response = $this->json($dataclient, 201, []);
+
         return $response;
     }
 
@@ -122,11 +128,12 @@ class ClientController extends AbstractController
      */
     public function delete(int $id,  ManagerRegistry $doctrine): JsonResponse
     {
-        // $entityManager = $doctrine->getManager();
         $client = $this->clientRepository->find($id);
+
         if (!$client) {
             return $this->json("Aucun client for ID :$id", 404);
         }
+
         $this->em->remove($client);
         $this->em->flush();
 
@@ -135,6 +142,7 @@ class ClientController extends AbstractController
             'status' => 200,
             'message' => "Client delete  ID : $id",
         ], 200);
+
         return $response;
     }
 
@@ -147,10 +155,12 @@ class ClientController extends AbstractController
             $client = $this->clientRepository->findAll();
             return $this->json($client, 200, []);
         }
+
         $client = $this->clientRepository->findby(
             ['name' => $search],
             ['age' => 'ASC']
         );
+
         if (!$client) {
             return $this->json("Aucun client ", 404);
         }
@@ -171,6 +181,7 @@ class ClientController extends AbstractController
         $client->setAge(56);
         $entityManager->persist($client);
         $entityManager->flush();
+
         return new Response('Saved new product with id ' . $client->getId());
     }
 }

@@ -12,12 +12,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class TokenSubscriber implements EventSubscriberInterface
 {
-    // private $apikey;
-
-    // public function __construct($apikey)
-    // {
-    //     $this->apikey = $apikey;
-    // }
+    const VALIDE_APIKEY = "abcdef";
 
     public function onKernelController(ControllerEvent $event)
     {
@@ -29,19 +24,18 @@ class TokenSubscriber implements EventSubscriberInterface
         }
 
         if ($controller instanceof ApiKeyAuthenticatedController) {
-            $valide_apikey = "abcef";
-            define("VALIDE_APIKEY", "abcef");
-
             $headers = $event->getRequest()->headers;
             $apikey = $headers->get('apikey');
 
-            if ($apikey !== VALIDE_APIKEY) {
+            if ($apikey !== self::VALIDE_APIKEY) {
                 $response = new JsonResponse();
                 $response->setStatusCode(JsonResponse::HTTP_NOT_FOUND);
+
                 $response->setData([
                     'message' => 'Api protected , Invalide ApiKey , Vous n avez pas d acces',
                     'status' => 406
                 ]);
+
                 $response->send();
                 throw new AccessDeniedHttpException('This action needs a valid token!');
             }

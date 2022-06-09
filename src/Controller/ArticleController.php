@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Controller\TokenAuthenticatedController;
+use App\Service\SaveImageService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -20,15 +21,18 @@ class ArticleController extends AbstractController implements ApiKeyAuthenticate
     private $articleRepository;
     private $categoryRepository;
     private $em;
+    private $saveImageService;
 
     public function __construct(
         ArticleRepository $articleRepository,
         CategoryRepository $categoryRepository,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        SaveImageService $saveImageService
     ) {
         $this->articleRepository = $articleRepository;
         $this->categoryRepository = $categoryRepository;
         $this->em = $em;
+        $this->saveImageService = $saveImageService;
     }
 
 
@@ -64,25 +68,15 @@ class ArticleController extends AbstractController implements ApiKeyAuthenticate
         $title =  $datadecode['title'];
         $description =  $datadecode['description'];
         $content =  $datadecode['content'];
-
         $imageBase64  =  $datadecode['imageBase64'];
-        $image_chunks = explode(";base64,", $imageBase64);
-        $image = base64_decode($image_chunks[1]);
         $extension  =  $datadecode['extension'];
 
-        $filename = md5(uniqid()) . '.' . $extension;
-        $uploads_directory = $this->getParameter('uploads_directory') . '/' . $filename;
-        file_put_contents($uploads_directory, $image);
+        $uploads_path = $this->getParameter('uploads_directory');
+
+        $filename = $this->saveImageService->store($uploads_path, $imageBase64, $extension);
 
         $category = $this->categoryRepository->find($categoryId);
         $now = new \DateTime();
-
-        // $filename = md5(uniqid()) . '.' . $extension;
-        // $uploads_directory = $this->getParameter('uploads_directory');
-        // $image->move(
-        //     $uploads_directory,
-        //     $filename
-        // );
 
         $article = new Article();
         $article->setCategory($category)
@@ -95,6 +89,7 @@ class ArticleController extends AbstractController implements ApiKeyAuthenticate
         $this->em->flush();
 
         $response = $this->json($article, 200, []);
+
         return $response;
     }
 
@@ -120,6 +115,7 @@ class ArticleController extends AbstractController implements ApiKeyAuthenticate
             'updatedAt' => $article->getUpdatedAt(),
         ];
         $response = $this->json($data, 200, []);
+
         return $response;
     }
 
@@ -149,6 +145,7 @@ class ArticleController extends AbstractController implements ApiKeyAuthenticate
         $this->em->flush();
 
         $response = $this->json($comment, 200, []);
+
         return $response;
     }
 }

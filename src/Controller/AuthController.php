@@ -6,10 +6,10 @@ use App\Entity\Users;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use App\Repository\UsersRepository;
+use App\Service\ResponseAuthService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Cookie;
-
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,17 +29,20 @@ class AuthController extends AbstractController
     private $em;
     private $usersRepository;
     private $encoder;
+    private $responseAuthService;
 
     public function __construct(
         SerializerInterface $serializer,
         EntityManagerInterface $em,
         UsersRepository $usersRepository,
-        UserPasswordEncoderInterface $encoder
+        UserPasswordEncoderInterface $encoder,
+        ResponseAuthService $responseAuthService
     ) {
         $this->serializer = $serializer;
         $this->em = $em;
         $this->usersRepository = $usersRepository;
         $this->encoder = $encoder;
+        $this->responseAuthService = $responseAuthService;
     }
 
 
@@ -53,6 +56,7 @@ class AuthController extends AbstractController
         $key = "monkeycode2020secure";
         $data_token =  $user->eraseCredentials();
         $jwt = JWT::encode($data_token, $key, 'HS256');
+
         $reponseSucces =  [
             'status' => 200,
             'username' => $user->getUserIdentifier(),
@@ -62,14 +66,15 @@ class AuthController extends AbstractController
             'class' => "alert alert-primary",
             'token'  => $jwt,
         ];
+
         $response = new Response();
         $cookieName = "user-token";
         $cookieValue = $jwt;
         $expires = time() + 36000;
         $content = json_encode($reponseSucces);
         $cookie = Cookie::create($cookieName, $cookieValue,  $expires);
-        $response->headers->setCookie($cookie);
 
+        $response->headers->setCookie($cookie);
         $response->setContent($content);
         $response->setStatusCode(200);
         $response->headers->set('Content-Type', 'application/json');
@@ -91,11 +96,12 @@ class AuthController extends AbstractController
 
         $key = "monkeycode2020secure";
         $decoded = JWT::decode($token, new Key($key, 'HS256'));
+        $user = $this->usersRepository->findby(['username' => $decoded->username]);
+
         if (!$decoded) {
             return $this->json($reponseFail, 400, []);
         }
 
-        $user = $this->usersRepository->findby(['username' => $decoded->username]);
         if (!$user) {
             return $this->json($reponseFail, 400, []);
         }
@@ -116,47 +122,28 @@ class AuthController extends AbstractController
      */
     public function login(Request $request): JsonResponse
     {
-        $reponseSucces =  [
-            'status' => 200,
-            'authentification' => true,
-            'message' => "User authentifié",
-            'class' => "alert alert-primary"
-        ];
-        $reponseFailUser =  [
-            'status' => 400,
-            'authentification' => false,
-            'message' => "No user with name",
-            'class' => "alert alert-danger"
-        ];
-        $reponsePassword =  [
-            'status' => 400,
-            'authentification' => false,
-            'message' => "Password incorrect",
-            'class' => "alert alert-danger"
-        ];
-
 
         $datareq = $request->getContent();
         $user = $this->serializer->deserialize($datareq, Users::class, 'json');
-        // $encoder = $this->container->get('security.password_encoder');
         $encoded = $this->encoder->encodePassword($user, $user->getPassword());
 
         $data = json_decode($request->getContent(), true);
-        $name = $data['name'];
+        $name = $data['username'];
         $pass = $data['password'];
 
-        $user = $this->usersRepository->findby(['name' => $name]);
+        $user = $this->usersRepository->findby(['username' => $name]);
+
         if (!$user) {
-            return $this->json($reponseFailUser, 400, []);
+            return $this->json($this->responseAuthService->reponseFailUser(), 400, []);
         }
 
         foreach ($user as $u) {
             $userpass = $u->getPassword();
-            // dd($userpass , $encoded);
+
             if ($encoded == $userpass) {
-                return $this->json($reponseSucces, 200, []);
+                return $this->json($this->responseAuthService->reponseSucces(), 200, []);
             } else {
-                return $this->json($reponsePassword, 400, []);
+                return $this->json($this->responseAuthService->reponsePassword(), 400, []);
             }
         }
     }
